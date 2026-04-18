@@ -24,8 +24,8 @@ export interface PaymentInitResult {
   expiresAt: Date;
 }
 
-const KHPAY_BASE = process.env.KHPAY_BASE_URL || "https://khpay.site/api/v1";
-const KHPAY_KEY = process.env.KHPAY_API_KEY || "";
+const KHPAY_BASE = (process.env.KHPAY_BASE_URL || "https://khpay.site/api/v1").trim();
+const KHPAY_KEY = (process.env.KHPAY_API_KEY || "").trim();
 const SIM_MODE = process.env.PAYMENT_SIMULATION_MODE === "true";
 
 export async function initiatePayment(
@@ -102,12 +102,14 @@ async function initiateKhpay(args: InitiatePaymentArgs): Promise<PaymentInitResu
     cache: "no-store",
   });
 
-  const json = await res.json().catch(() => null);
+  const rawText = await res.text().catch(() => "");
+  let json: any = null;
+  try { json = JSON.parse(rawText); } catch { /* not JSON */ }
   if (!res.ok || !json?.success) {
     const msg =
       json?.error ||
       json?.message ||
-      (json ? JSON.stringify(json).slice(0, 300) : `HTTP ${res.status}`);
+      (json ? JSON.stringify(json).slice(0, 300) : `HTTP ${res.status} — ${rawText.slice(0, 200)}`);
     throw new Error(`KHPay: ${msg}`);
   }
 
