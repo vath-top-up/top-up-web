@@ -38,10 +38,24 @@ export async function initiatePayment(
 
 function simulatePayment(args: InitiatePaymentArgs): PaymentInitResult {
   const ref = `SIM-${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
-  const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const isPublicHttpUrl = (value?: string): value is string =>
+    !!value &&
+    /^https?:\/\//i.test(value) &&
+    !/^https?:\/\/(localhost|127\.|0\.0\.0\.0|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/i.test(value);
+
+  const returnOrigin = (() => {
+    try {
+      return new URL(args.returnUrl).origin;
+    } catch {
+      return "";
+    }
+  })();
+  const envBase = process.env.NEXT_PUBLIC_BASE_URL;
+  const base = (isPublicHttpUrl(envBase) ? envBase : returnOrigin).replace(/\/$/, "");
+
   return {
     paymentRef: ref,
-    redirectUrl: `${base}/api/payment/simulate?order=${args.orderNumber}&ref=${ref}&method=${args.method}`,
+    redirectUrl: `${base || ""}/api/payment/simulate?order=${args.orderNumber}&ref=${ref}&method=${args.method}`,
     expiresAt: new Date(Date.now() + 15 * 60 * 1000),
   };
 }

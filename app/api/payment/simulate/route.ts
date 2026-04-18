@@ -38,7 +38,14 @@ export async function GET(req: NextRequest) {
   }
 
   // Render a simple "payment complete" page that redirects to order tracker.
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const isPublicHttpUrl = (value?: string | null): value is string => {
+    if (!value) return false;
+    if (!/^https?:\/\//i.test(value)) return false;
+    return !/^https?:\/\/(localhost|127\.|0\.0\.0\.0|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/i.test(value);
+  };
+  const requestOrigin = req.nextUrl.origin;
+  const envBase = process.env.NEXT_PUBLIC_BASE_URL;
+  const baseUrl = (isPublicHttpUrl(envBase) ? envBase : requestOrigin).replace(/\/$/, "");
   const html = `<!doctype html>
 <html>
 <head>

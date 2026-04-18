@@ -20,6 +20,12 @@ const createOrderSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const isPublicHttpUrl = (value?: string | null): value is string => {
+      if (!value) return false;
+      if (!/^https?:\/\//i.test(value)) return false;
+      return !/^https?:\/\/(localhost|127\.|0\.0\.0\.0|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/i.test(value);
+    };
+
     const body = await req.json();
     const parsed = createOrderSchema.safeParse(body);
     if (!parsed.success) {
@@ -142,11 +148,13 @@ export async function POST(req: NextRequest) {
 
     // Initiate payment with the gateway
     const requestOrigin = req.nextUrl.origin;
-    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || requestOrigin).replace(/\/$/, "");
+    const envBase = process.env.NEXT_PUBLIC_BASE_URL;
+    const baseUrl = (isPublicHttpUrl(envBase) ? envBase : requestOrigin).replace(/\/$/, "");
     // Prefer PUBLIC_APP_URL (tunnel/production domain) for gateway callbacks
     // so webhooks actually reach us. Falls back to baseUrl; the payment lib
     // strips localhost URLs automatically (the gateway refuses private IPs).
-    const publicUrl = (process.env.PUBLIC_APP_URL || baseUrl).replace(/\/$/, "");
+    const envPublic = process.env.PUBLIC_APP_URL;
+    const publicUrl = (isPublicHttpUrl(envPublic) ? envPublic : baseUrl).replace(/\/$/, "");
     const init = await initiatePayment({
       orderNumber: order.orderNumber,
       amountUsd: order.amountUsd,
