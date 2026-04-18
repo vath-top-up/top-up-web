@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Script from "next/script";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useCurrency } from "@/lib/currency";
@@ -17,6 +18,38 @@ import {
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
+
+/* KHPay widget global */
+declare global {
+  interface Window {
+    KHPay?: {
+      init: (cfg: { key: string }) => void;
+      createPayment: (opts: {
+        amount: number;
+        currency?: string;
+        note?: string;
+        onSuccess?: (data: { transaction_id: string; [k: string]: unknown }) => void;
+        onClose?: () => void;
+      }) => void;
+    };
+  }
+}
+
+/* KHPay widget global */
+declare global {
+  interface Window {
+    KHPay?: {
+      init: (cfg: { key: string }) => void;
+      createPayment: (opts: {
+        amount: number;
+        currency?: string;
+        note?: string;
+        onSuccess?: (data: { transaction_id: string; [k: string]: unknown }) => void;
+        onClose?: () => void;
+      }) => void;
+    };
+  }
+}
 
 interface OrderPayment {
   orderNumber: string;

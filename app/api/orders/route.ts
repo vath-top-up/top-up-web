@@ -149,40 +149,46 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    // Initiate payment with the gateway
+    // Initiate payment with the gateway — if it fails (e.g. Cloudflare blocks
+    // the server-side request), the order still exists and the checkout page
+    // will fall back to the KHPay client-side widget.
     const requestOrigin = req.nextUrl.origin;
     const envBase = process.env.NEXT_PUBLIC_BASE_URL;
     const baseUrl = (isPublicHttpUrl(envBase) ? envBase : requestOrigin).replace(/\/$/, "");
-    // Prefer PUBLIC_APP_URL (tunnel/production domain) for gateway callbacks
-    // so webhooks actually reach us. Falls back to baseUrl; the payment lib
-    // strips localhost URLs automatically (the gateway refuses private IPs).
     const envPublic = process.env.PUBLIC_APP_URL;
     const publicUrl = (isPublicHttpUrl(envPublic) ? envPublic : baseUrl).replace(/\/$/, "");
-    const init = await initiatePayment({
-      orderNumber: order.orderNumber,
-      amountUsd: order.amountUsd,
-      method: data.paymentMethod,
-      returnUrl: `${publicUrl}/order?number=${order.orderNumber}`,
-      cancelUrl: `${publicUrl}/games/${game.slug}`,
-      callbackUrl: `${publicUrl}/api/payment/webhook/khpay`,
-      note: `RITHTOPUP Â· ${game.name} Â· ${product.name}`,
-      customerEmail: data.customerEmail,
-      metadata: {
-        game_slug: game.slug,
-        product_name: product.name,
-        player_uid: data.playerUid,
-      },
-    });
 
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        paymentRef: init.paymentRef,
-        paymentUrl: init.redirectUrl,
-        qrString: init.qrString ?? null,
-        paymentExpiresAt: init.expiresAt,
-      },
-    });
+    try {
+      const init = await initiatePayment({
+        orderNumber: order.orderNumber,
+        amountUsd: order.amountUsd,
+        method: data.paymentMethod,
+        returnUrl: `${publicUrl}/order?number=${order.orderNumber}`,
+        cancelUrl: `${publicUrl}/games/${game.slug}`,
+        callbackUrl: `${publicUrl}/api/payment/webhook/khpay`,
+        note: `RITHTOPUP · ${game.name} · ${product.name}`,
+        customerEmail: data.customerEmail,
+        metadata: {
+          game_slug: game.slug,
+          product_name: product.name,
+          player_uid: data.playerUid,
+        },
+      });
+
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          paymentRef: init.paymentRef,
+          paymentUrl: init.redirectUrl,
+          qrString: init.qrString ?? null,
+          paymentExpiresAt: init.expiresAt,
+        },
+      });
+    } catch (paymentErr) {
+      // Server-side KHPay call failed (likely Cloudflare challenge).
+      // Order is already created — checkout page will use client-side widget.
+      console.warn("[orders] Server-side payment init failed, will use client widget:", paymentErr instanceof Error ? paymentErr.message : paymentErr);
+    }
 
     return NextResponse.json({
       orderNumber: order.orderNumber,
