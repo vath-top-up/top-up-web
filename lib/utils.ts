@@ -20,9 +20,9 @@ export function calcKhr(usd: number, rate: number = 4100): number {
   return Math.round(usd * rate / 100) * 100; // round to nearest 100 KHR
 }
 
-// Validate UID format - basic: digits only, 6-20 chars
+// Validate UID format - basic: digits only, 5-20 chars
 export function isValidUid(uid: string): boolean {
-  return /^\d{6,20}$/.test(uid.trim());
+  return /^\d{5,20}$/.test(uid.trim());
 }
 
 // Validate server zone id

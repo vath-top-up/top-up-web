@@ -9,7 +9,7 @@ import { z } from "zod";
 const createOrderSchema = z.object({
   gameId: z.string().min(1),
   productId: z.string().min(1),
-  playerUid: z.string().min(4).max(20),
+  playerUid: z.string().min(5).max(20),
   serverId: z.string().optional(),
   customerEmail: z.string().email().optional(),
   customerPhone: z.string().optional(),
@@ -92,7 +92,8 @@ export async function POST(req: NextRequest) {
     const userAgent = req.headers.get("user-agent") ?? "unknown";
     const exchangeRate = settings?.exchangeRate ?? 4100;
 
-    // Promo code handling
+    // Promo code handling + order creation in a single transaction to
+    // prevent race conditions on the promo usage counter.
     let promoCodeId: string | null = null;
     let discountUsd = 0;
     let finalPrice = product.priceUsd;
@@ -116,34 +117,36 @@ export async function POST(req: NextRequest) {
         discountUsd = Math.round(discountUsd * 100) / 100;
         finalPrice = Math.round((product.priceUsd - discountUsd) * 100) / 100;
         promoCodeId = promo.id;
-
-        // Increment usage count
-        await prisma.promoCode.update({
-          where: { id: promo.id },
-          data: { usedCount: { increment: 1 } },
-        });
       }
     }
 
-    const order = await prisma.order.create({
-      data: {
-        orderNumber,
-        gameId: game.id,
-        productId: product.id,
-        playerUid: data.playerUid,
-        serverId: data.serverId,
-        playerNickname: data.playerNickname,
-        customerEmail: data.customerEmail,
-        customerPhone: data.customerPhone,
-        amountUsd: finalPrice,
-        amountKhr: calcKhr(finalPrice, exchangeRate),
-        paymentMethod: data.paymentMethod,
-        status: "PENDING",
-        ipAddress,
-        userAgent,
-        promoCodeId,
-        discountUsd,
-      },
+    const order = await prisma.$transaction(async (tx) => {
+      if (promoCodeId) {
+        await tx.promoCode.update({
+          where: { id: promoCodeId },
+          data: { usedCount: { increment: 1 } },
+        });
+      }
+      return tx.order.create({
+        data: {
+          orderNumber,
+          gameId: game.id,
+          productId: product.id,
+          playerUid: data.playerUid,
+          serverId: data.serverId,
+          playerNickname: data.playerNickname,
+          customerEmail: data.customerEmail,
+          customerPhone: data.customerPhone,
+          amountUsd: finalPrice,
+          amountKhr: calcKhr(finalPrice, exchangeRate),
+          paymentMethod: data.paymentMethod,
+          status: "PENDING",
+          ipAddress,
+          userAgent,
+          promoCodeId,
+          discountUsd,
+        },
+      });
     });
 
     // Initiate payment with the gateway

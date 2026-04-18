@@ -84,7 +84,7 @@ export default function AdminLoginPage() {
           </form>
 
           <p className="text-xs text-fox-muted text-center mt-6">
-            Default: admin@rithtopup.com / ChangeMeNow123!
+            Authorized personnel only.
           </p>
         </div>
       </div>

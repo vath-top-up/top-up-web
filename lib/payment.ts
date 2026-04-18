@@ -92,15 +92,23 @@ async function initiateKhpay(args: InitiatePaymentArgs): Promise<PaymentInitResu
   if (isPublicUrl(args.cancelUrl)) body.cancel_url = args.cancelUrl;
   if (isPublicUrl(args.callbackUrl)) body.callback_url = args.callbackUrl;
 
-  const res = await fetch(`${KHPAY_BASE}/qr/generate`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${KHPAY_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-    cache: "no-store",
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  let res: Response;
+  try {
+    res = await fetch(`${KHPAY_BASE}/qr/generate`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${KHPAY_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+      cache: "no-store",
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 
   const rawText = await res.text().catch(() => "");
   let json: any = null;
@@ -135,10 +143,18 @@ export async function fetchKhpayStatus(transactionId: string): Promise<{
   currency?: string;
 } | null> {
   if (SIM_MODE || !KHPAY_KEY) return null;
-  const res = await fetch(`${KHPAY_BASE}/qr/check/${transactionId}`, {
-    headers: { "Authorization": `Bearer ${KHPAY_KEY}` },
-    cache: "no-store",
-  });
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), 10000);
+  let res: Response;
+  try {
+    res = await fetch(`${KHPAY_BASE}/qr/check/${transactionId}`, {
+      headers: { "Authorization": `Bearer ${KHPAY_KEY}` },
+      cache: "no-store",
+      signal: ac.signal,
+    });
+  } finally {
+    clearTimeout(t);
+  }
   const json = await res.json().catch(() => null);
   if (!res.ok || !json?.success) {
     console.warn(`[khpay] check ${transactionId} failed:`, res.status, json);
