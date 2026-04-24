@@ -12,16 +12,16 @@ async function main() {
     update: {},
     create: {
       id: 1,
-      siteName: "RITHTOPUP",
+      siteName: "Vath",
       exchangeRate: 4100,
-      supportTelegram: "@rithtopup",
-      supportEmail: "support@rithtopup.com",
+      supportTelegram: "@Vathana_Sem",
+      supportEmail: "thiefxgt@gmail.com",
     },
   });
 
   // --- Admin user ---
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@rithtopup.com";
-  const adminPassword = process.env.ADMIN_PASSWORD || "ChangeMeNow123!";
+  const adminEmail = process.env.ADMIN_EMAIL || "thiefxgt@gmail.com";
+  const adminPassword = process.env.ADMIN_PASSWORD || "123@vath789";
   const passwordHash = await bcrypt.hash(adminPassword, 10);
   await prisma.admin.upsert({
     where: { email: adminEmail },
@@ -42,8 +42,8 @@ async function main() {
       name: "Mobile Legends: Bang Bang",
       publisher: "Moonton",
       description: "Top up Diamonds instantly for Mobile Legends",
-      imageUrl: "https://cdn.rithtopup.com/games/mlbb.jpg",
-      bannerUrl: "https://cdn.rithtopup.com/banners/mlbb.jpg",
+      imageUrl: "https://cdn.vathtopup.com/games/mlbb.jpg",
+      bannerUrl: "https://cdn.vathtopup.com/banners/mlbb.jpg",
       currencyName: "Diamonds",
       uidLabel: "User ID (Zone ID)",
       uidExample: "12345678",
