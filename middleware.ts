@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const SESSION_COOKIE = "rithtopup_admin";
+const SESSION_COOKIE = "vath_admin";
 
 function getSecret() {
   const secret = process.env.JWT_SECRET;

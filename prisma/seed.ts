@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("⚡ Seeding RITHTOPUP database...");
+  console.log("⚡ Seeding vathP database...");
 
   // --- Settings singleton ---
   await prisma.settings.upsert({
@@ -75,8 +75,8 @@ async function main() {
       name: "Garena Free Fire",
       publisher: "Garena",
       description: "Top up Diamonds for Free Fire MAX and Free Fire",
-      imageUrl: "https://cdn.rithtopup.com/games/freefire.jpg",
-      bannerUrl: "https://cdn.rithtopup.com/banners/freefire.jpg",
+      imageUrl: "https://cdn.vath.com/games/freefire.jpg",
+      bannerUrl: "https://cdn.vath.com/banners/freefire.jpg",
       currencyName: "Diamonds",
       uidLabel: "Player ID",
       uidExample: "1234567890",
@@ -98,8 +98,8 @@ async function main() {
       name: "PUBG Mobile",
       publisher: "Tencent",
       description: "Top up UC for PUBG Mobile Global and KR",
-      imageUrl: "https://cdn.rithtopup.com/games/pubgm.jpg",
-      bannerUrl: "https://cdn.rithtopup.com/banners/pubgm.jpg",
+      imageUrl: "https://cdn.vath.com/games/pubgm.jpg",
+      bannerUrl: "https://cdn.vath.com/banners/pubgm.jpg",
       currencyName: "UC",
       uidLabel: "Player ID",
       uidExample: "5123456789",
@@ -119,7 +119,7 @@ async function main() {
       name: "Genshin Impact",
       publisher: "HoYoverse",
       description: "Top up Genesis Crystals for Genshin Impact",
-      imageUrl: "https://cdn.rithtopup.com/games/genshin.jpg",
+      imageUrl: "https://cdn.vath.com/games/genshin.jpg",
       currencyName: "Genesis Crystals",
       uidLabel: "UID",
       uidExample: "812345678",
@@ -142,7 +142,7 @@ async function main() {
       name: "Honkai: Star Rail",
       publisher: "HoYoverse",
       description: "Top up Oneiric Shards for Honkai: Star Rail",
-      imageUrl: "https://cdn.rithtopup.com/games/hsr.jpg",
+      imageUrl: "https://cdn.vath.com/games/hsr.jpg",
       currencyName: "Oneiric Shards",
       uidLabel: "UID",
       uidExample: "812345678",
@@ -161,7 +161,7 @@ async function main() {
       name: "Call of Duty: Mobile",
       publisher: "Activision",
       description: "Top up CP for Call of Duty Mobile",
-      imageUrl: "https://cdn.rithtopup.com/games/codm.jpg",
+      imageUrl: "https://cdn.vath.com/games/codm.jpg",
       currencyName: "CP",
       uidLabel: "Player ID",
       uidExample: "1234567890",

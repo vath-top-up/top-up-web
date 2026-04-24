@@ -1,4 +1,4 @@
-// Prisma schema for RITHTOPUP
+// Prisma schema for vath
 // Local dev: sqlite (file:./dev.db)
 // Production (Vercel/Neon): change provider to "postgresql" and run `prisma db push`
 generator client {
@@ -124,10 +124,10 @@ model Admin {
 
 model Settings {
   id          Int      @id @default(1)
-  siteName    String   @default("RITHTOPUP")
+  siteName    String   @default("vath")
   exchangeRate Float   @default(4100) // KHR per 1 USD
-  supportTelegram String? @default("@rithtopup")
-  supportEmail String? @default("support@rithtopup.com")
+  supportTelegram String? @default("@VaTHana_Sem")
+  supportEmail String? @default("thiefxgt@gmail.com")
   maintenanceMode Boolean @default(false)
   maintenanceMessage String?
   announcement String?

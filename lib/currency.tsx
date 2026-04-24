@@ -17,7 +17,7 @@ interface CurrencyContextValue {
 
 const CurrencyContext = createContext<CurrencyContextValue | null>(null);
 
-const STORAGE_KEY = "rithtopup:currency";
+const STORAGE_KEY = "vath:currency";
 
 export function CurrencyProvider({
   children,
